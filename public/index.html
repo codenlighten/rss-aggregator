@@ -181,12 +181,16 @@
               feedElement.className = "feed-item";
               const id = feed.id;
               const idP = document.createElement("p");
+              const scrapeP = document.createElement("p");
               const el = document.createElement("p");
               idP.innerHTML = `<a target="_blank" href="/feed/${id}">View Full Feed</a>`;
+              scrapeP.innerHTML = `<a target="_blank" href="/feed/scrape/${id}">Scrape Feed</a>`;
+
               el.innerHTML = `<h3>${feed.title}</h3><p>${feed.link}</p>`;
               el.onclick = () => fetchAndDisplayFullFeed(feed.id);
               feedElement.appendChild(el);
               feedElement.appendChild(idP);
+              feedElement.appendChild(scrapeP);
               feedsContainer.appendChild(feedElement);
             });
             document.getElementById(

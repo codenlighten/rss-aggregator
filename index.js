@@ -1,4 +1,5 @@
 require("dotenv").config();
+const cheerio = require("cheerio");
 const express = require("express");
 const app = express();
 app.use(express.json());
@@ -77,6 +78,39 @@ app.get("/feed/:id", async (req, res) => {
     }
   } else {
     res.status(404).send("Feed not found");
+  }
+});
+app.get("/feed/scrape/:id", async (req, res) => {
+  let id = req.params.id;
+  const feedSnapshot = await db.ref(`feeds/${id}`).get();
+
+  if (!feedSnapshot.exists()) {
+    return res.status(404).send("Feed not found");
+  }
+
+  let feed = feedSnapshot.val();
+
+  try {
+    let parsedFeed = await parser.parseURL(feed.url);
+    const links = parsedFeed.items.map((item) => item.link);
+    const scrapedData = [];
+
+    for (const link of links) {
+      let lastIndexOfHttps = link.lastIndexOf("https");
+      let newLink = link.slice(lastIndexOfHttps);
+      console.log(newLink);
+      const response = await fetch(newLink);
+      const body = await response.text();
+      console.log(body);
+      const $ = cheerio.load(body);
+      // Example: scraping all paragraph texts from the page
+      const pageText = $("p").text();
+      scrapedData.push({ link, pageText });
+    }
+
+    res.json(scrapedData);
+  } catch (error) {
+    res.status(500).send("Error scraping the feed: " + error.message);
   }
 });
 
