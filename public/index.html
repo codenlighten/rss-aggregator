@@ -156,6 +156,7 @@
 
       <!-- Display RSS Feeds -->
       <div id="rssFeeds"></div>
+      <div id="status"></div>
       <div id="fullFeedResponse">
         <h3>Full Feed Response</h3>
         <pre id="fullFeedResponseContent"></pre>
@@ -167,26 +168,35 @@
         </div>
       </div>
     </div>
-
     <script>
       function fetchAndDisplayFeeds() {
+        document.getElementById("status").innerHTML = "Loading...";
         fetch("/rss")
           .then((response) => response.json())
           .then((feeds) => {
+            let numOfLinks = 0;
             const feedsContainer = document.getElementById("rssFeeds");
             feedsContainer.innerHTML = "";
             feeds.forEach((feed) => {
+              numOfLinks += feed.items.length;
               const feedElement = document.createElement("div");
               feedElement.className = "feed-item";
               feedElement.innerHTML = `<h3>${feed.title}</h3><p>${feed.link}</p>`;
               feedElement.onclick = () => fetchAndDisplayFullFeed(feed.id);
               feedsContainer.appendChild(feedElement);
             });
+            document.getElementById(
+              "status"
+            ).innerHTML = `Loaded ${feeds.length} feeds with ${numOfLinks} links`;
           })
-          .catch((error) => console.error("Error:", error));
+          .catch((error) => {
+            console.error("Error:", error);
+            document.getElementById("status").innerHTML = "Error loading feeds";
+          });
       }
 
       function fetchAndDisplayFullFeed(feedId) {
+        document.getElementById("status").innerHTML = "Loading...";
         fetch(`/feed/${feedId}`)
           .then((response) => response.json())
           .then((feed) => {
@@ -204,8 +214,12 @@
 
             fullFeedResponse.style.display = "block";
             fullFeedResponse.style.wordWrap = "break-word";
+            document.getElementById("status").innerHTML = "";
           })
-          .catch((error) => console.error("Error:", error));
+          .catch((error) => {
+            console.error("Error:", error);
+            document.getElementById("status").innerHTML = "Error loading feed";
+          });
       }
 
       function parseAndDisplayJson(obj, container) {
@@ -236,6 +250,7 @@
         .getElementById("rssForm")
         .addEventListener("submit", function (e) {
           e.preventDefault();
+          document.getElementById("status").innerHTML = "Loading...";
           const url = document.getElementById("rssUrl").value;
           fetch("/add", {
             method: "POST",
@@ -248,9 +263,11 @@
             .then((data) => {
               console.log(data);
               fetchAndDisplayFeeds();
+              document.getElementById("status").innerHTML = "";
             })
             .catch((error) => {
               console.error("Error:", error);
+              document.getElementById("status").innerHTML = "Error adding feed";
             });
         });
 
