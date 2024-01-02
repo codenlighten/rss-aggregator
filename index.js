@@ -45,7 +45,10 @@ app.post("/add", async (req, res) => {
 app.get("/rss", async (req, res) => {
   const feedsSnapshot = await db.ref("feeds").get();
   const feeds = feedsSnapshot.val();
-  res.json(
+  if (!feeds) {
+    return res.status(404).send("No feeds found");
+  }
+  return res.json(
     Object.values(feeds).map((feed) => ({
       id: feed.id,
       title: feed.title,

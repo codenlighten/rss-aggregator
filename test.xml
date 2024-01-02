@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+  <title>Your Company Name</title>
+  <link>http://www.yourcompanywebsite.com</link>
+  <description>This is an RSS feed about our company's latest news</description>
+  <item>
+    <title>News Article Title</title>
+    <link>http://www.yourcompanywebsite.com/news-article</link>
+    <description>Description of your news article</description>
+    <pubDate>Wed, 01 Jan 2024 00:00:00 GMT</pubDate>
+  </item>
+  <!-- more <item> elements here for each piece of content -->
+</channel>
+</rss>
