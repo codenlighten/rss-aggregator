@@ -30,15 +30,20 @@ app.post("/add", async (req, res) => {
     if (feed.error) {
       return res.status(400).send(feed.error.message);
     }
-    // Check if feed already exists in the database
-    const existingFeed = await db.ref(`feeds/${feed.id}`).get();
-    if (!existingFeed.exists()) {
-      // Save new feed to the database
-      await db.ref(`feeds/${feed.id}`).set(feed);
-      res.json(feed); // Send back the added feed as a response
-    } else {
-      res.status(400).send("Feed already exists");
+    const feedsSnapshot = await db.ref("feeds").get();
+    const feeds = feedsSnapshot.val();
+    console.log(feeds, "feeds");
+    // Check if feed url already exists
+    if (feeds !== null) {
+      feeds.forEach((feed) => {
+        if (feed.url === url) {
+          return res.status(400).send("Feed already exists");
+        }
+      });
     }
+
+    await db.ref(`feeds/${feed.id}`).set(feed);
+    res.json(feed); // Send back the added feed as a response
   } catch (error) {
     res.status(500).send("Error parsing RSS feed");
   }
