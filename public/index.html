@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RSS Aggregator</title>
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      #rssForm {
+        margin-bottom: 20px;
+      }
+      #rssForm input {
+        width: 300px;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      #rssForm button {
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #fff;
+        cursor: pointer;
+      }
+      #rssForm button:hover {
+        background-color: #eee;
+      }
+      #rssFeeds {
+        display: flex;
+        flex-wrap: wrap;
+      }
+      #rssFeeds > div {
+        width: 300px;
+        margin-right: 20px;
+        margin-bottom: 20px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      #rssFeeds > div h3 {
+        margin-top: 0;
+      }
+      #rssFeeds > div p {
+        margin-bottom: 0;
+      }
+      #fullFeedResponse {
+        margin-top: 20px;
+        display: none;
+      }
+      #fullFeedResponse h3 {
+        margin-top: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Form to add new RSS feed -->
+    <form id="rssForm">
+      <input type="text" id="rssUrl" placeholder="Enter RSS feed URL" />
+      <button type="submit">Add RSS Feed</button>
+    </form>
+
+    <!-- Display RSS Feeds -->
+    <div id="rssFeeds"></div>
+    <div id="fullFeedResponse">
+      <h3>Full Feed Response</h3>
+      <pre id="fullFeedResponseContent"></pre>
+    </div>
+
+    <script>
+      function fetchAndDisplayFeeds() {
+        fetch("/rss")
+          .then((response) => response.json())
+          .then((feeds) => {
+            const feedsContainer = document.getElementById("rssFeeds");
+            feedsContainer.innerHTML = "";
+            feeds.forEach((feed) => {
+              const feedElement = document.createElement("div");
+              feedElement.className = "feed-item";
+              feedElement.innerHTML = `<h3>${feed.title}</h3><p>${feed.link}</p>`;
+              feedElement.onclick = () => fetchAndDisplayFullFeed(feed.id);
+              feedsContainer.appendChild(feedElement);
+            });
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+      function fetchAndDisplayFullFeed(feedId) {
+        fetch(`/feed/${feedId}`)
+          .then((response) => response.json())
+          .then((feed) => {
+            const fullFeedResponse =
+              document.getElementById("fullFeedResponse");
+            const fullFeedContent = document.getElementById(
+              "fullFeedResponseContent"
+            );
+
+            // Clear existing content
+            fullFeedContent.innerHTML = "";
+
+            // Create a readable structure from the JSON response
+            parseAndDisplayJson(feed, fullFeedContent);
+
+            fullFeedResponse.style.display = "block";
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+      function parseAndDisplayJson(obj, container) {
+        const ul = document.createElement("ul");
+        for (const key in obj) {
+          const li = document.createElement("li");
+          if (typeof obj[key] === "object" && obj[key] !== null) {
+            li.appendChild(document.createTextNode(key + ": "));
+            parseAndDisplayJson(obj[key], li);
+          } else {
+            li.textContent = `${key}: ${obj[key]}`;
+          }
+          ul.appendChild(li);
+        }
+        container.appendChild(ul);
+      }
+
+      document
+        .getElementById("rssForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          const url = document.getElementById("rssUrl").value;
+          fetch("/add", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              console.log(data);
+              fetchAndDisplayFeeds();
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+            });
+        });
+
+      fetchAndDisplayFeeds();
+    </script>
+  </body>
+</html>
