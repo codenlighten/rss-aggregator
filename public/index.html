@@ -17,11 +17,13 @@
         margin: auto;
         overflow: auto;
         padding: 0 20px;
+        word-wrap: break-word;
       }
       #rssForm {
         display: flex;
         justify-content: center;
         margin-bottom: 20px;
+        word-wrap: break-word;
       }
       #rssForm input {
         width: 70%;
@@ -47,6 +49,7 @@
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
         grid-gap: 20px;
+        word-wrap: break-word;
       }
       .feed-item {
         background: #fff;
@@ -54,6 +57,7 @@
         padding: 20px;
         border-radius: 5px;
         box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        word-wrap: break-word;
       }
       .feed-item h3 {
         margin-top: 0;
@@ -80,6 +84,7 @@
         background: #fff;
         border-radius: 5px;
         box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        word-wrap: break-word;
       }
       #fullFeedResponse h3 {
         margin-top: 0;
@@ -198,23 +203,33 @@
             parseAndDisplayJson(feed, fullFeedContent);
 
             fullFeedResponse.style.display = "block";
+            fullFeedResponse.style.wordWrap = "break-word";
           })
           .catch((error) => console.error("Error:", error));
       }
 
       function parseAndDisplayJson(obj, container) {
-        const ul = document.createElement("ul");
-        for (const key in obj) {
-          const li = document.createElement("li");
-          if (typeof obj[key] === "object" && obj[key] !== null) {
-            li.appendChild(document.createTextNode(key + ": "));
-            parseAndDisplayJson(obj[key], li);
-          } else {
-            li.textContent = `${key}: ${obj[key]}`;
-          }
-          ul.appendChild(li);
-        }
-        container.appendChild(ul);
+        const items = obj.items;
+        //display title, link, description, content
+        items.forEach((item) => {
+          console.log(item);
+          const itemElement = document.createElement("div");
+          const title = document.createElement("h3");
+          title.innerHTML = item.title;
+          const link = document.createElement("a");
+          link.innerHTML = item.link;
+          link.href = item.link;
+          const content = document.createElement("p");
+          content.innerHTML = item.content;
+
+          itemElement.appendChild(title);
+          itemElement.appendChild(link);
+          itemElement.appendChild(content);
+          container.appendChild(itemElement);
+          //   word-wrap: break-word;
+          container.style.wordWrap = "break-word";
+          itemElement.style.wordWrap = "break-word";
+        });
       }
 
       document
