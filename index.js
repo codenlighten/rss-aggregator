@@ -4,7 +4,6 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Public folder
 const { v4: uuidv4 } = require("uuid");
 app.use(express.static("public"));
 
@@ -22,28 +21,27 @@ const port = process.env.PORT || 3000;
 // Post to add RSS feed
 app.post("/add", async (req, res) => {
   try {
-    let url = req.body.url;
-    let feed = await parser.parseURL(url);
-    feed.id = uuidv4();
-    feed.url = url;
-    //if feed returns error, send error message
-    if (feed.error) {
-      return res.status(400).send(feed.error.message);
-    }
+    const url = req.body.url;
+    const feed = await parser.parseURL(url);
     const feedsSnapshot = await db.ref("feeds").get();
-    const feeds = feedsSnapshot.val();
-    console.log(feeds, "feeds");
+    const feeds = feedsSnapshot.val() || {};
+
     // Check if feed url already exists
-    if (feeds !== null) {
-      feeds.forEach((feed) => {
-        if (feed.url === url) {
-          return res.status(400).send("Feed already exists");
-        }
-      });
+    if (Object.values(feeds).some((f) => f.url === url)) {
+      return res.status(400).send("Feed already exists");
     }
 
-    await db.ref(`feeds/${feed.id}`).set(feed);
-    res.json(feed); // Send back the added feed as a response
+    const feedId = uuidv4();
+    const newFeed = {
+      id: feedId,
+      title: feed.title,
+      link: feed.link,
+      url: feed.feedUrl || url, // Some RSS feeds might not have a feedUrl
+    };
+
+    // Add feed to database
+    await db.ref(`feeds/${feedId}`).set(newFeed);
+    res.json(newFeed);
   } catch (error) {
     res.status(500).send("Error parsing RSS feed");
   }
