@@ -179,8 +179,14 @@
             feeds.forEach((feed) => {
               const feedElement = document.createElement("div");
               feedElement.className = "feed-item";
-              feedElement.innerHTML = `<h3>${feed.title}</h3><p>${feed.link}</p>`;
-              feedElement.onclick = () => fetchAndDisplayFullFeed(feed.id);
+              const id = feed.id;
+              const idP = document.createElement("p");
+              const el = document.createElement("p");
+              idP.innerHTML = `<a target="_blank" href="/feed/${id}">View Full Feed</a>`;
+              el.innerHTML = `<h3>${feed.title}</h3><p>${feed.link}</p>`;
+              el.onclick = () => fetchAndDisplayFullFeed(feed.id);
+              feedElement.appendChild(el);
+              feedElement.appendChild(idP);
               feedsContainer.appendChild(feedElement);
             });
             document.getElementById(
@@ -231,12 +237,14 @@
           const link = document.createElement("a");
           link.innerHTML = item.link;
           link.href = item.link;
+
           const content = document.createElement("p");
           content.innerHTML = item.content;
 
           itemElement.appendChild(title);
           itemElement.appendChild(link);
           itemElement.appendChild(content);
+
           container.appendChild(itemElement);
           //   word-wrap: break-word;
           container.style.wordWrap = "break-word";
