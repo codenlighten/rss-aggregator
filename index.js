@@ -26,7 +26,10 @@ app.post("/add", async (req, res) => {
     let feed = await parser.parseURL(url);
     feed.id = uuidv4();
     feed.url = url;
-
+    //if feed returns error, send error message
+    if (feed.error) {
+      return res.status(400).send(feed.error.message);
+    }
     // Check if feed already exists in the database
     const existingFeed = await db.ref(`feeds/${feed.id}`).get();
     if (!existingFeed.exists()) {
