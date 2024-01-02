@@ -19,6 +19,20 @@ db.ready(() => {
 
 const port = process.env.PORT || 3000;
 
+async function searchDuckDuckGo(query) {
+  // https://duckduckgo.com/?t=h_&q=
+  const url = `http://api.duckduckgo.com/?q=${query}&format=json&pretty=1`;
+
+  try {
+    const response = await fetch(url);
+    const body = await response.json();
+    console.log(body);
+    return body;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 // Post to add RSS feed
 app.post("/add", async (req, res) => {
   try {
@@ -111,6 +125,17 @@ app.get("/feed/scrape/:id", async (req, res) => {
     res.json(scrapedData);
   } catch (error) {
     res.status(500).send("Error scraping the feed: " + error.message);
+  }
+});
+
+app.get("/search/:term", async (req, res) => {
+  let term = req.params.term;
+  try {
+    const response = await searchDuckDuckGo(term);
+    console.log(response);
+    res.json(response);
+  } catch (error) {
+    res.status(500).send("Error searching DuckDuckGo");
   }
 });
 
