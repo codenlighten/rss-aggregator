@@ -174,11 +174,9 @@
         fetch("/rss")
           .then((response) => response.json())
           .then((feeds) => {
-            let numOfLinks = 0;
             const feedsContainer = document.getElementById("rssFeeds");
             feedsContainer.innerHTML = "";
             feeds.forEach((feed) => {
-              numOfLinks += feed.items.length;
               const feedElement = document.createElement("div");
               feedElement.className = "feed-item";
               feedElement.innerHTML = `<h3>${feed.title}</h3><p>${feed.link}</p>`;
@@ -187,7 +185,7 @@
             });
             document.getElementById(
               "status"
-            ).innerHTML = `Loaded ${feeds.length} feeds with ${numOfLinks} links`;
+            ).innerHTML = `Loaded ${feeds.length} feeds`;
           })
           .catch((error) => {
             console.error("Error:", error);
